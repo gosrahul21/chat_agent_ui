@@ -13,7 +13,6 @@ interface ChatInterfaceProps {
 }
 
 export default function ChatInterface({
-  chatbotId,
   chatbotName,
   messages,
   onSendMessage,

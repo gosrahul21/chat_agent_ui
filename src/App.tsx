@@ -66,7 +66,7 @@ function App() {
 
     setIsLoading(true);
     try {
-      const assistantMessage = await mockAPI.sendMessage(selectedChatbotId, message);
+      await mockAPI.sendMessage(selectedChatbotId, message); // TODO: handle the response from the API
       await loadChatHistory(selectedChatbotId);
     } catch (error) {
       console.error('Failed to send message:', error);
