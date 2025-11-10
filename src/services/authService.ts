@@ -7,8 +7,8 @@ import type {
   GoogleTokenRequest 
 } from '../types/auth';
 
-// Update this with your actual backend URL
-const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:3001';
+// Auth requests now go through chat_agent service (port 3000) which proxies to auth service (port 8000)
+const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:3000';
 
 const authAPI = axios.create({
   baseURL: API_BASE_URL,
