@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Bot as BotIcon } from 'lucide-react';
+import { Plus, Search, Bot as BotIcon, LogOut, User as UserIcon } from 'lucide-react';
 import ChatbotCard from './components/ChatbotCard';
 import ChatInterface from './components/ChatInterface';
 import CreateChatbotModal, { type CreateChatbotData } from './components/CreateChatbotModal';
 import ChatbotSettingsModal from './components/ChatbotSettingsModal';
+import AuthPage from './components/AuthPage';
+import { useAuth } from './contexts/AuthContext';
 import { mockAPI } from './data/mockData';
 import type { Chatbot, Message } from './types';
 import type { Document } from './types/document';
 
 function App() {
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -21,6 +24,7 @@ function App() {
   // Load chatbots on mount
   useEffect(() => {
     loadChatbots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load messages when chatbot is selected
@@ -158,6 +162,25 @@ function App() {
     bot.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Show loading screen while checking authentication
+  if (authLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center p-4 bg-primary-600 rounded-2xl mb-4 animate-pulse">
+            <BotIcon className="w-12 h-12 text-white" />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth page if not authenticated
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
@@ -173,10 +196,44 @@ function App() {
                 <p className="text-sm text-gray-500">AI-Powered Customer Support</p>
               </div>
             </div>
-            <button className="btn-primary flex items-center space-x-2" onClick={() => setIsCreateModalOpen(true)}>
-              <Plus className="w-4 h-4" />
-              <span>New Chatbot</span>
-            </button>
+            <div className="flex items-center space-x-4">
+              {/* User Info */}
+              <div className="flex items-center space-x-3 px-4 py-2 bg-gray-50 rounded-lg">
+                {user?.picture ? (
+                  <img 
+                    src={user.picture} 
+                    alt={user.userName || user.email} 
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 text-primary-600" />
+                  </div>
+                )}
+                <div className="text-left">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.firstName || user?.userName || 'User'}
+                  </p>
+                  <p className="text-xs text-gray-500">{user?.email}</p>
+                </div>
+              </div>
+              
+              <button 
+                className="btn-primary flex items-center space-x-2" 
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <Plus className="w-4 h-4" />
+                <span>New Chatbot</span>
+              </button>
+              
+              <button
+                onClick={logout}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
