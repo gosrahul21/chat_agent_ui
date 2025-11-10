@@ -1,5 +1,5 @@
 export interface Chatbot {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   systemPrompt?: string;

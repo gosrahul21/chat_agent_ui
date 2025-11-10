@@ -1,8 +1,14 @@
-import { X, Settings as SettingsIcon, Trash2, Upload, FileText } from 'lucide-react';
-import { useState } from 'react';
-import DocumentUpload from './DocumentUpload';
-import type { Chatbot } from '../types';
-import type { Document } from '../types/document';
+import {
+  X,
+  Settings as SettingsIcon,
+  Trash2,
+  Upload,
+  FileText,
+} from "lucide-react";
+import { useState } from "react";
+import DocumentUpload from "./DocumentUpload";
+import type { Chatbot } from "../types";
+import type { Document } from "../types/document";
 
 interface ChatbotSettingsModalProps {
   chatbot: Chatbot;
@@ -25,11 +31,13 @@ export default function ChatbotSettingsModal({
   onUploadDocuments,
   onDeleteDocument,
 }: ChatbotSettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'documents'>('general');
+  const [activeTab, setActiveTab] = useState<"general" | "documents">(
+    "general"
+  );
   const [formData, setFormData] = useState({
     name: chatbot.name,
     description: chatbot.description,
-    systemPrompt: chatbot.systemPrompt || '',
+    systemPrompt: chatbot.systemPrompt || "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -51,15 +59,15 @@ export default function ChatbotSettingsModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     } else if (formData.name.length > 100) {
-      newErrors.name = 'Name must be less than 100 characters';
+      newErrors.name = "Name must be less than 100 characters";
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = "Description is required";
     } else if (formData.description.length > 500) {
-      newErrors.description = 'Description must be less than 500 characters';
+      newErrors.description = "Description must be less than 500 characters";
     }
 
     setErrors(newErrors);
@@ -83,18 +91,17 @@ export default function ChatbotSettingsModal({
   };
 
   const handleDeleteChatbot = () => {
-    if (window.confirm(`Are you sure you want to delete "${chatbot.name}"? This action cannot be undone.`)) {
-      onDelete();
-      onClose();
-    }
+    // The confirmation dialog is handled in App.tsx via onDelete callback
+    // onDelete will close the modal after confirmation
+    onDelete();
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (
@@ -104,7 +111,9 @@ export default function ChatbotSettingsModal({
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <SettingsIcon className="w-6 h-6 text-gray-700" />
-            <h2 className="text-xl font-semibold text-gray-900">Chatbot Settings</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Chatbot Settings
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -117,21 +126,21 @@ export default function ChatbotSettingsModal({
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
           <button
-            onClick={() => setActiveTab('general')}
+            onClick={() => setActiveTab("general")}
             className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'general'
-                ? 'text-primary-600 border-b-2 border-primary-600'
-                : 'text-gray-600 hover:text-gray-900'
+              activeTab === "general"
+                ? "text-primary-600 border-b-2 border-primary-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             General
           </button>
           <button
-            onClick={() => setActiveTab('documents')}
+            onClick={() => setActiveTab("documents")}
             className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'documents'
-                ? 'text-primary-600 border-b-2 border-primary-600'
-                : 'text-gray-600 hover:text-gray-900'
+              activeTab === "documents"
+                ? "text-primary-600 border-b-2 border-primary-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             Documents ({documents.length})
@@ -140,7 +149,7 @@ export default function ChatbotSettingsModal({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'general' ? (
+          {activeTab === "general" ? (
             <div className="space-y-4">
               {/* Name */}
               <div>
@@ -150,11 +159,13 @@ export default function ChatbotSettingsModal({
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  className={`input ${errors.name ? 'border-red-500' : ''}`}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                  className={`input ${errors.name ? "border-red-500" : ""}`}
                   maxLength={100}
                 />
-                {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name}</p>}
+                {errors.name && (
+                  <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+                )}
               </div>
 
               {/* Description */}
@@ -164,12 +175,18 @@ export default function ChatbotSettingsModal({
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  className={`input resize-none ${errors.description ? 'border-red-500' : ''}`}
+                  onChange={(e) => handleChange("description", e.target.value)}
+                  className={`input resize-none ${
+                    errors.description ? "border-red-500" : ""
+                  }`}
                   rows={3}
                   maxLength={500}
                 />
-                {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+                {errors.description && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.description}
+                  </p>
+                )}
               </div>
 
               {/* System Prompt */}
@@ -179,7 +196,7 @@ export default function ChatbotSettingsModal({
                 </label>
                 <textarea
                   value={formData.systemPrompt}
-                  onChange={(e) => handleChange('systemPrompt', e.target.value)}
+                  onChange={(e) => handleChange("systemPrompt", e.target.value)}
                   className="input resize-none"
                   rows={4}
                   maxLength={1000}
@@ -188,7 +205,9 @@ export default function ChatbotSettingsModal({
 
               {/* Danger Zone */}
               <div className="pt-4 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Danger Zone</h3>
+                <h3 className="text-sm font-medium text-gray-900 mb-2">
+                  Danger Zone
+                </h3>
                 <button
                   onClick={handleDeleteChatbot}
                   className="flex items-center space-x-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors"
@@ -202,7 +221,9 @@ export default function ChatbotSettingsModal({
             <div className="space-y-4">
               {/* Upload Section */}
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Upload New Documents</h3>
+                <h3 className="text-sm font-medium text-gray-900 mb-3">
+                  Upload New Documents
+                </h3>
                 <DocumentUpload onFilesSelected={setSelectedFiles} />
                 {selectedFiles.length > 0 && (
                   <button
@@ -223,7 +244,9 @@ export default function ChatbotSettingsModal({
                 {documents.length === 0 ? (
                   <div className="text-center py-8">
                     <FileText className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">No documents uploaded yet</p>
+                    <p className="text-sm text-gray-500">
+                      No documents uploaded yet
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -235,9 +258,12 @@ export default function ChatbotSettingsModal({
                         <div className="flex items-center space-x-3 flex-1">
                           <FileText className="w-4 h-4 text-gray-500" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{doc.filename}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {doc.filename}
+                            </p>
                             <p className="text-xs text-gray-500">
-                              {formatFileSize(doc.fileSize)} • {new Date(doc.uploadedAt).toLocaleDateString()}
+                              {formatFileSize(doc.fileSize)} •{" "}
+                              {new Date(doc.uploadedAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -262,7 +288,7 @@ export default function ChatbotSettingsModal({
           <button onClick={onClose} className="btn-secondary">
             Cancel
           </button>
-          {activeTab === 'general' && (
+          {activeTab === "general" && (
             <button onClick={handleSave} className="btn-primary">
               Save Changes
             </button>
@@ -272,4 +298,3 @@ export default function ChatbotSettingsModal({
     </div>
   );
 }
-
