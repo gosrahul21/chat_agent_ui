@@ -48,9 +48,9 @@ export const mockAPI = {
     // Upload files if provided
     if (data.files && data.files.length > 0) {
       try {
-        await documentService.uploadDocuments(chatbot.id, data.files);
+        await documentService.uploadDocuments(chatbot._id, data.files);
         // Optionally train the chatbot immediately after upload
-        await documentService.trainChatbot(chatbot.id);
+        await documentService.trainChatbot(chatbot._id);
       } catch (error) {
         console.error('Error uploading documents:', error);
         // Don't fail the chatbot creation if document upload fails
@@ -92,7 +92,7 @@ export const mockAPI = {
   },
 
   updateChatbot: async (chatbot: Chatbot): Promise<Chatbot> => {
-    return chatbotService.updateChatbot(chatbot.id, {
+    return chatbotService.updateChatbot(chatbot._id, {
       name: chatbot.name,
       description: chatbot.description,
       systemPrompt: chatbot.systemPrompt,
