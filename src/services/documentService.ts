@@ -131,7 +131,7 @@ export const documentService = {
    */
   async trainChatbot(chatbotId: string): Promise<TrainingResponse> {
     const response = await ragAPI.post<TrainingResponse>(
-      `/api/chatbots/${chatbotId}/train`
+      `/api/chatbots/${chatbotId}/vectors`
     );
     return response.data;
   },

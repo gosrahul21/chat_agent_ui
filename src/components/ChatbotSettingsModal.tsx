@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import DocumentUpload from "./DocumentUpload";
+import EmbedCodeDisplay from "./EmbedCodeDisplay";
 import type { Chatbot } from "../types";
 import type { Document } from "../types/document";
 
@@ -31,7 +32,7 @@ export default function ChatbotSettingsModal({
   onUploadDocuments,
   onDeleteDocument,
 }: ChatbotSettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<"general" | "documents">(
+  const [activeTab, setActiveTab] = useState<"general" | "documents" | "embed">(
     "general"
   );
   const [formData, setFormData] = useState({
@@ -145,11 +146,34 @@ export default function ChatbotSettingsModal({
           >
             Documents ({documents.length})
           </button>
+          <button
+            onClick={() => setActiveTab("embed")}
+            className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+              activeTab === "embed"
+                ? "text-primary-600 border-b-2 border-primary-600"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Embed
+          </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === "general" ? (
+          {activeTab === "embed" ? (
+            <EmbedCodeDisplay
+              chatbotId={chatbot._id}
+              allowedDomains={chatbot.allowedDomains}
+              isEmbeddable={chatbot.isEmbeddable}
+              onUpdateDomains={(domains, isEmbeddable) => {
+                onUpdate({
+                  ...chatbot,
+                  allowedDomains: domains,
+                  isEmbeddable: isEmbeddable,
+                });
+              }}
+            />
+          ) : activeTab === "general" ? (
             <div className="space-y-4">
               {/* Name */}
               <div>

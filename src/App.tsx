@@ -5,6 +5,10 @@ import {
   Bot as BotIcon,
   LogOut,
   User as UserIcon,
+  Command,
+  // MessageSquare,
+  // FileText,
+  Sparkles,
 } from "lucide-react";
 import ChatbotCard from "./components/ChatbotCard";
 import ChatInterface from "./components/ChatInterface";
@@ -14,6 +18,9 @@ import CreateChatbotModal, {
 import ChatbotSettingsModal from "./components/ChatbotSettingsModal";
 import ConfirmationDialog from "./components/ConfirmationDialog";
 import AuthPage from "./components/AuthPage";
+// import StatsCard from "./components/StatsCard";
+import CommandPalette from "./components/CommandPalette";
+import { ToastContainer, type ToastProps } from "./components/Toast";
 import { useAuth } from "./contexts/AuthContext";
 import { mockAPI } from "./data/mockData";
 import type { Chatbot, Message } from "./types";
@@ -31,6 +38,8 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [toasts, setToasts] = useState<ToastProps[]>([]);
 
   // Confirmation dialog state
   const [confirmationDialog, setConfirmationDialog] = useState<{
@@ -48,6 +57,25 @@ function App() {
     loadChatbots();
   }, [user]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // CMD+K or CTRL+K to open command palette
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen(true);
+      }
+      // CMD+N or CTRL+N to create new chatbot
+      if ((e.metaKey || e.ctrlKey) && e.key === "n") {
+        e.preventDefault();
+        setIsCreateModalOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Load messages when chatbot is selected
   useEffect(() => {
     if (selectedChatbotId) {
@@ -55,6 +83,15 @@ function App() {
       loadDocuments(selectedChatbotId);
     }
   }, [selectedChatbotId]);
+
+  const showToast = (message: string, type: ToastProps["type"] = "info") => {
+    const id = Date.now().toString();
+    setToasts((prev) => [...prev, { id, message, type, onClose: removeToast }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
 
   const loadChatbots = async () => {
     try {
@@ -64,10 +101,8 @@ function App() {
         setSelectedChatbotId(bots[0]._id);
       }
     } catch (error) {
-      setTimeout(() => {
-        setSelectedChatbotId(null);
-        console.error("Failed to load chatbots:", error);
-      }, 10000);
+      showToast("Failed to load chatbots", "error");
+      console.error("Failed to load chatbots:", error);
     }
   };
 
@@ -132,9 +167,10 @@ function App() {
       setChatbots([...chatbots, newChatbot]);
       setSelectedChatbotId(newChatbot._id);
       setIsCreateModalOpen(false);
+      showToast("Chatbot created successfully! 🎉", "success");
     } catch (error) {
       console.error("Failed to create chatbot:", error);
-      alert("Failed to create chatbot. Please try again.");
+      showToast("Failed to create chatbot. Please try again.", "error");
     }
   };
 
@@ -142,10 +178,10 @@ function App() {
     try {
       const updated = await mockAPI.updateChatbot(chatbot);
       setChatbots(chatbots.map((b) => (b._id === updated._id ? updated : b)));
-      setIsSettingsModalOpen(false);
+      showToast("Chatbot updated successfully!", "success");
     } catch (error) {
       console.error("Failed to update chatbot:", error);
-      alert("Failed to update chatbot. Please try again.");
+      showToast("Failed to update chatbot. Please try again.", "error");
     }
   };
 
@@ -170,9 +206,10 @@ function App() {
           );
           setIsSettingsModalOpen(false);
           setConfirmationDialog(null);
+          showToast("Chatbot deleted successfully", "success");
         } catch (error) {
           console.error("Failed to delete chatbot:", error);
-          alert("Failed to delete chatbot. Please try again.");
+          showToast("Failed to delete chatbot. Please try again.", "error");
           setConfirmationDialog(null);
         }
       },
@@ -185,9 +222,10 @@ function App() {
     try {
       const newDocs = await mockAPI.uploadDocuments(selectedChatbotId, files);
       setDocuments([...documents, ...newDocs]);
+      showToast(`${files.length} document(s) uploaded successfully!`, "success");
     } catch (error) {
       console.error("Failed to upload documents:", error);
-      alert("Failed to upload documents. Please try again.");
+      showToast("Failed to upload documents. Please try again.", "error");
     }
   };
 
@@ -208,14 +246,19 @@ function App() {
           await mockAPI.deleteDocument(selectedChatbotId, documentId);
           setDocuments(documents.filter((d) => d.id !== documentId));
           setConfirmationDialog(null);
+          showToast("Document deleted successfully", "success");
         } catch (error) {
           console.error("Failed to delete document:", error);
-          alert("Failed to delete document. Please try again.");
+          showToast("Failed to delete document. Please try again.", "error");
           setConfirmationDialog(null);
         }
       },
     });
   };
+
+  // Calculate stats
+  // const totalMessages = messages.length;
+  // const totalDocuments = documents.length;
 
   const selectedChatbot = chatbots.find((bot) => bot._id === selectedChatbotId);
 
@@ -245,23 +288,37 @@ function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        chatbots={chatbots}
+        onSelectChatbot={setSelectedChatbotId}
+        onCreateNew={() => setIsCreateModalOpen(true)}
+      />
+
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
         <div className="max-w-screen-2xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-primary-600 rounded-lg">
-                <BotIcon className="w-6 h-6 text-white" />
+              <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg">
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Chat Agent</h1>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Chat Agent Pro
+                </h1>
                 <p className="text-sm text-gray-500">
-                  AI-Powered Customer Support
+                  AI-Powered Customer Support Platform
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {/* User Info */}
               <div className="flex items-center space-x-3 px-4 py-2 bg-gray-50 rounded-lg">
                 {user?.picture ? (
@@ -283,9 +340,20 @@ function App() {
                 </div>
               </div>
 
+              {/* Quick Actions */}
               <button
-                className="btn-primary flex items-center space-x-2"
+                onClick={() => setIsCommandPaletteOpen(true)}
+                className="hidden md:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                title="Open Command Palette (⌘K)"
+              >
+                <Command className="w-4 h-4" />
+                <span className="text-xs font-medium">⌘K</span>
+              </button>
+
+              <button
+                className="btn-primary flex items-center space-x-2 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
                 onClick={() => setIsCreateModalOpen(true)}
+                title="Create New Chatbot (⌘N)"
               >
                 <Plus className="w-4 h-4" />
                 <span>New Chatbot</span>
@@ -293,7 +361,7 @@ function App() {
 
               <button
                 onClick={logout}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all hover:scale-105"
                 title="Logout"
               >
                 <LogOut className="w-5 h-5" />
@@ -303,20 +371,53 @@ function App() {
         </div>
       </header>
 
+      {/* Stats Section */}
+      {/* {chatbots.length > 0 && (
+        <div className="max-w-screen-2xl mx-auto w-full px-6 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <StatsCard
+              icon={BotIcon}
+              label="Total Chatbots"
+              value={chatbots.length}
+              gradient="from-blue-500 to-blue-600"
+              trend={{ value: "+2 this week", isPositive: true }}
+            />
+            <StatsCard
+              icon={MessageSquare}
+              label="Total Messages"
+              value={totalMessages}
+              gradient="from-purple-500 to-purple-600"
+            />
+            <StatsCard
+              icon={FileText}
+              label="Documents"
+              value={totalDocuments}
+              gradient="from-green-500 to-green-600"
+            />
+            <StatsCard
+              icon={TrendingUp}
+              label="Active Chats"
+              value={messages.length > 0 ? "Active" : "Idle"}
+              gradient="from-orange-500 to-orange-600"
+            />
+          </div>
+        </div>
+      )} */}
+
       {/* Main Content */}
-      <div className="flex-1 max-w-screen-2xl mx-auto w-full flex overflow-hidden">
+      <div className="flex-1 max-w-screen-2xl mx-auto w-full flex overflow-hidden gap-4 px-6 pb-6">
         {/* Sidebar */}
-        <aside className="w-80 bg-white border-r border-gray-200 flex flex-col">
+        <aside className="w-80 bg-white/80 backdrop-blur-lg border border-gray-200/50 rounded-2xl shadow-xl flex flex-col overflow-hidden">
           {/* Search */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="p-4 border-b border-gray-200/50">
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
               <input
                 type="text"
                 placeholder="Search chatbots..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all bg-white/50 focus:bg-white"
               />
             </div>
           </div>
@@ -360,7 +461,7 @@ function App() {
         </aside>
 
         {/* Chat Area */}
-        <main className="flex-1 flex flex-col bg-white">
+        <main className="flex-1 flex flex-col bg-white/80 backdrop-blur-lg border border-gray-200/50 rounded-2xl shadow-xl overflow-hidden">
           {selectedChatbot ? (
             <ChatInterface
               chatbotId={selectedChatbot._id}
@@ -373,26 +474,38 @@ function App() {
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <BotIcon className="w-20 h-20 text-gray-300 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <div className="text-center animate-in fade-in duration-500">
+                <div className="relative inline-block mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+                  <BotIcon className="relative w-20 h-20 text-gray-400 mx-auto" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
                   {chatbots.length === 0
-                    ? "No Chatbots Yet"
+                    ? "Welcome to Chat Agent Pro"
                     : "No Chatbot Selected"}
                 </h2>
-                <p className="text-gray-500 mb-6">
+                <p className="text-gray-500 mb-6 max-w-md mx-auto">
                   {chatbots.length === 0
-                    ? "Create your first chatbot to get started with AI-powered conversations"
+                    ? "Create your first AI chatbot and start delivering exceptional customer support with intelligent conversations"
                     : "Select a chatbot from the sidebar to start chatting"}
                 </p>
                 {chatbots.length === 0 && (
-                  <button
-                    className="btn-primary flex items-center space-x-2 px-6 py-3 mx-auto"
-                    onClick={() => setIsCreateModalOpen(true)}
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span>Create Your First Chatbot</span>
-                  </button>
+                  <div className="space-y-4">
+                    <button
+                      className="btn-primary flex items-center space-x-2 px-6 py-3 mx-auto shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      onClick={() => setIsCreateModalOpen(true)}
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span>Create Your First Chatbot</span>
+                    </button>
+                    <p className="text-sm text-gray-400">
+                      or press{" "}
+                      <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-mono">
+                        ⌘N
+                      </kbd>{" "}
+                      to get started
+                    </p>
+                  </div>
                 )}
               </div>
             </div>

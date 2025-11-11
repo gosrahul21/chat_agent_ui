@@ -10,7 +10,7 @@ interface ChatbotCardProps {
 export default function ChatbotCard({ chatbot, onSelect, isSelected }: ChatbotCardProps) {
   return (
     <div
-      onClick={() => onSelect(chatbot.id)}
+      onClick={() => onSelect(chatbot._id)}
       className={`card cursor-pointer transition-all hover:shadow-md ${
         isSelected ? 'ring-2 ring-primary-500 border-primary-500' : ''
       }`}

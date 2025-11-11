@@ -1,11 +1,14 @@
 export interface Chatbot {
   _id: string;
+  userId?: string;
   name: string;
   description: string;
   systemPrompt?: string;
   createdAt: string;
   updatedAt: string;
   metadata?: Record<string, unknown>;
+  allowedDomains?: string[];
+  isEmbeddable?: boolean;
 }
 
 export interface Message {
