@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { Chatbot, ChatHistory, ChatResponse } from '../types';
 
 // Chat Agent API (Node.js backend)
@@ -58,8 +58,8 @@ export const chatbotService = {
     try {
       const response = await chatbotAPI.get<APIResponse<Chatbot>>(`/api/chatbots/${chatbotId}`);
       return response.data.data || null;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error) {
+      if ((error as AxiosError).response?.status === 404) {
         return null;
       }
       throw error;

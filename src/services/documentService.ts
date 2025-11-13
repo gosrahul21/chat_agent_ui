@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { Document } from '../types/document';
 
 // RAG Model API (Python backend)
@@ -38,14 +38,7 @@ interface DocumentListResponse {
   total: number;
 }
 
-interface TrainingResponse {
-  message: string;
-  chatbot_id: string;
-  documents_processed: number;
-  total_chunks: number;
-  collection_name: string;
-  trained_at: string;
-}
+
 
 interface TrainingStatusResponse {
   chatbot_id: string;
@@ -75,8 +68,8 @@ export const documentService = {
         fileType: doc.file_type,
         uploadedAt: doc.uploaded_at,
       }));
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error) {
+      if ((error as AxiosError).response?.status === 404) {
         return [];
       }
       throw error;
@@ -129,12 +122,12 @@ export const documentService = {
   /**
    * Train a chatbot with uploaded documents
    */
-  async trainChatbot(chatbotId: string): Promise<TrainingResponse> {
-    const response = await ragAPI.post<TrainingResponse>(
-      `/api/chatbots/${chatbotId}/vectors`
-    );
-    return response.data;
-  },
+  // async trainChatbot(chatbotId: string): Promise<TrainingResponse> {
+  //   const response = await ragAPI.post<TrainingResponse>(
+  //     `/api/chatbots/${chatbotId}/vectors`
+  //   );
+  //   return response.data;
+  // },
 
   /**
    * Get training status for a chatbot

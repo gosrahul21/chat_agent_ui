@@ -49,8 +49,6 @@ export const mockAPI = {
     if (data.files && data.files.length > 0) {
       try {
         await documentService.uploadDocuments(chatbot._id, data.files);
-        // Optionally train the chatbot immediately after upload
-        await documentService.trainChatbot(chatbot._id);
       } catch (error) {
         console.error('Error uploading documents:', error);
         // Don't fail the chatbot creation if document upload fails
@@ -67,32 +65,16 @@ export const mockAPI = {
 
   uploadDocuments: async (chatbotId: string, files: File[]): Promise<Document[]> => {
     const documents = await documentService.uploadDocuments(chatbotId, files);
-    
-    // Automatically train the chatbot after upload
-    try {
-      await documentService.trainChatbot(chatbotId);
-    } catch (error) {
-      console.error('Error training chatbot:', error);
-      // Don't fail the upload if training fails
-    }
-    
     return documents;
   },
 
   deleteDocument: async (chatbotId: string, documentId: string): Promise<void> => {
     await documentService.deleteDocument(chatbotId, documentId);
-    
-    // Retrain the chatbot after deleting a document
-    try {
-      await documentService.trainChatbot(chatbotId);
-    } catch (error) {
-      console.error('Error retraining chatbot:', error);
-      // Don't fail the delete if retraining fails
-    }
   },
 
   updateChatbot: async (chatbot: Chatbot): Promise<Chatbot> => {
     return chatbotService.updateChatbot(chatbot._id, {
+      ...chatbot,
       name: chatbot.name,
       description: chatbot.description,
       systemPrompt: chatbot.systemPrompt,
