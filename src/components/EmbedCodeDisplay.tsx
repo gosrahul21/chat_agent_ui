@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Copy, Check, Code, Globe, Plus, X } from "lucide-react";
 
 interface EmbedCodeDisplayProps {
-  chatbotId: string;
+  embedKey: string;
   allowedDomains?: string[];
   isEmbeddable?: boolean;
   onUpdateDomains: (domains: string[], isEmbeddable: boolean) => void;
 }
 
 export default function EmbedCodeDisplay({
-  chatbotId,
+  embedKey,
   allowedDomains = [],
   isEmbeddable = false,
   onUpdateDomains,
@@ -19,12 +19,11 @@ export default function EmbedCodeDisplay({
   const [localDomains, setLocalDomains] = useState<string[]>(allowedDomains);
   const [localIsEmbeddable, setLocalIsEmbeddable] = useState(isEmbeddable);
 
-  const embedUrl = `${window.location.origin}/embed.html?chatbotId=${chatbotId}`;
+  const embedUrl = `${window.location.origin}/embed.html?embedKey=${embedKey}`;
   const embedCode = `<!-- Chatbot Embed Widget -->
 <script 
   src="${window.location.origin}/embed-loader.js" 
-  data-chatbot-id="${chatbotId}"
-  data-api-url="${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}"
+  data-embed-key="${embedKey}"
 ></script>`;
 
   const iframeCode = `<iframe 

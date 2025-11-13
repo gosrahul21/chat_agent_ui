@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Send, X, MessageCircle, Minimize2 } from "lucide-react";
 import axios from "axios";
 import { useParams } from "react-router";
-import ChatInterface from "./ChatInterface";
+import type { Chatbot } from "../types";
 // import ChatInterface from "./ChatInterface";
 
 interface Message {
@@ -12,36 +12,36 @@ interface Message {
 }
 
 interface EmbedChatProps {
-  chatbotId?: string;
+  sessionToken?: string;
   apiUrl?: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_CHATBOT_API_URL || "http://localhost:8000";
 
-export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps = {}) {
+export default function EmbedChat({ sessionToken: propSessionToken }: EmbedChatProps = {}) {
   // Support both route params (for direct URL) and props (for embed script)
   const params = useParams();
-  const chatbotId = propChatbotId || params.chatbotId;
+  const sessionToken = propSessionToken || params.sessionToken;
   const apiBaseUrl =  API_BASE_URL;
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [chatbotName, setChatbotName] = useState("Chat Assistant");
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [chatbot, setChatbot] = useState<Chatbot | null>(null);
 
   // Check if we're inside an iframe
   const isInIframe = window.self !== window.top;
 
   useEffect(() => {
-    if (chatbotId) {
+    if (sessionToken) {
       loadChatbot();
       loadHistory();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatbotId]);
+  }, [sessionToken]);
 
   // Listen for messages from parent (e.g., when button is clicked)
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
     if (isInIframe && window.parent) {
       window.parent.postMessage({
         type: 'CHATBOT_CLOSE',
-        chatbotId: chatbotId
+        chatbotId: chatbot?._id
       }, '*');
     }
   };
@@ -97,7 +97,7 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
     if (isInIframe && window.parent) {
       window.parent.postMessage({
         type: 'CHATBOT_OPEN',
-        chatbotId: chatbotId
+        chatbotId: chatbot?._id
       }, '*');
     }
   };
@@ -111,7 +111,7 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
     if (isInIframe && window.parent) {
       window.parent.postMessage({
         type: newMinimizedState ? 'CHATBOT_MINIMIZE' : 'CHATBOT_MAXIMIZE',
-        chatbotId: chatbotId
+        chatbotId: chatbot?._id
       }, '*');
     }
   };
@@ -119,10 +119,15 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
   const loadChatbot = async () => {
     try {
       const response = await axios.get(
-        `${apiBaseUrl}/api/public/chatbots/${chatbotId}`
+        `${apiBaseUrl}/api/public/chatbots`,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionToken}`
+          }
+        }
       );
       if (response.data.success) {
-        setChatbotName(response.data.data.name);
+        setChatbot(response.data.data);
       }
     } catch (error) {
       console.error("Failed to load chatbot:", error);
@@ -134,7 +139,12 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
   const loadHistory = async () => {
     try {
       const response = await axios.get(
-        `${apiBaseUrl}/api/public/chatbots/${chatbotId}/history`
+        `${apiBaseUrl}/api/public/chatbots/history`,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionToken}`
+          }
+        }
       );
       if (response.data.success) {
         const history = response.data.data.history || [];
@@ -168,11 +178,17 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
 
     try {
       const response = await axios.post(
-        `${apiBaseUrl}/api/public/chatbots/${chatbotId}/chat`,
+        `${apiBaseUrl}/api/public/chatbots/chat`,
         {
           message: inputValue,
           userId: "embed-user",
-        }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionToken}`
+          }
+        },
+
       );
 
       if (response.data.success) {
@@ -194,9 +210,9 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
     }
   };
 
-  if (error && error.includes("Domain not whitelisted")) {
+  if (error && (error.includes("Domain not whitelisted") || error.includes("This chatbot is not embeddable"))) {
     return (
-      <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 rounded-lg p-4 max-w-sm shadow-lg">
+      <div className="flex items-center justify-center h-[100vh] w-[100vw]  bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
         <p className="text-red-800 text-sm">
           This chatbot is not authorized for this domain.
         </p>
@@ -232,7 +248,7 @@ export default function EmbedChat({ chatbotId: propChatbotId }: EmbedChatProps =
           }`}>
             <div className="flex items-center space-x-2">
               <MessageCircle className="w-5 h-5" />
-              <h3 className="font-semibold">{chatbotName}</h3>
+              <h3 className="font-semibold">{chatbot?.name}</h3>
             </div>
             <div className="flex items-center space-x-2">
               <button

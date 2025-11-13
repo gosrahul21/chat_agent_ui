@@ -162,7 +162,7 @@ export default function ChatbotSettingsModal({
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === "embed" ? (
             <EmbedCodeDisplay
-              chatbotId={chatbot._id}
+              embedKey={chatbot.embedKey || ""}
               allowedDomains={chatbot.allowedDomains}
               isEmbeddable={chatbot.isEmbeddable}
               onUpdateDomains={(domains, isEmbeddable) => {

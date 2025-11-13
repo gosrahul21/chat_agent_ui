@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import type { Document } from '../types/document';
 
 // RAG Model API (Python backend)
-const RAG_API_URL = import.meta.env.VITE_RAG_API_URL || 'http://localhost:5000';
+const RAG_API_URL = import.meta.env.VITE_RAG_API_URL!;
 
 const ragAPI = axios.create({
   baseURL: RAG_API_URL,

@@ -9,6 +9,7 @@ export interface Chatbot {
   metadata?: Record<string, unknown>;
   allowedDomains?: string[];
   isEmbeddable?: boolean;
+  embedKey?: string;
 }
 
 export interface Message {

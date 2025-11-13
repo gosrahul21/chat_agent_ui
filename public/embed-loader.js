@@ -6,21 +6,37 @@
  *         data-chatbot-id="YOUR_CHATBOT_ID"
  *         data-api-url="https://your-api.com"></script>
  */
+const apiUrl =  'http://localhost:8000';
 
-(function() {
+async function generateSessionToken(embedKey) {
+  try {
+    const response = await fetch(`${apiUrl}/api/public/chatbots/generate-session/${embedKey}`);
+    const data = await response.json();
+    const sessionToken = data.data.sessionToken;
+    if (!sessionToken) {
+      console.error('Failed to generate session token');
+      return;
+    }
+    return sessionToken;
+  } catch (error) {
+    console.error('Failed to generate session token', error);
+    return null;
+  }
+}
+
+(async function() {
   // Get script tag and configuration
   const script = document.currentScript;
-  const chatbotId = script.getAttribute('data-chatbot-id');
-  const apiUrl = script.getAttribute('data-api-url') || 'http://localhost:8000';
-  
-  if (!chatbotId) {
-    console.error('Chatbot Embed: data-chatbot-id is required');
+  const embedKey = script.getAttribute('data-embed-key');
+
+  if (!embedKey) {
+    console.error('Chatbot Embed: data-embed-key is required');
     return;
   }
-
-  // Store configuration globally
-  window.CHATBOT_ID = chatbotId;
-  window.CHATBOT_API_URL = apiUrl;
+  const sessionToken = await generateSessionToken(embedKey);
+  if (!sessionToken) {
+    return;
+  }
 
   // Determine the base URL for the widget
   const scriptSrc = script.src;
@@ -76,7 +92,7 @@
   // ==========================================
   const iframe = document.createElement('iframe');
   iframe.id = 'chatbot-embed-iframe';
-  iframe.src = `${baseUrl}/chatbot/${chatbotId}`;
+  iframe.src = `${baseUrl}/chatbot/session/${sessionToken}`;
   iframe.style.cssText = `
     position: fixed;
     bottom: 20px;

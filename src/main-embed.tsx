@@ -13,17 +13,17 @@ declare global {
 
 // Get chatbot configuration from URL params (for iframe) or window object (for direct embed)
 const urlParams = new URLSearchParams(window.location.search);
-const chatbotId = urlParams.get('chatbotId') || window.CHATBOT_ID || '';
-const apiUrl = urlParams.get('apiUrl') || window.CHATBOT_API_URL || 'http://localhost:8000';
+const sessionToken = urlParams.get('sessionToken');
 
-if (!chatbotId) {
+
+if (!sessionToken) {
   console.error('EmbedChat: chatbotId is required');
 } else {
   const root = document.getElementById('chatbot-root');
   if (root) {
     ReactDOM.createRoot(root).render(
       <React.StrictMode>
-        <EmbedChat chatbotId={chatbotId} apiUrl={apiUrl} />
+        <EmbedChat sessionToken={sessionToken} />
       </React.StrictMode>,
     )
   }
