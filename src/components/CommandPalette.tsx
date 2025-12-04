@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Plus, Settings, Trash2, MessageCircle, FileText, X } from "lucide-react";
+import { Search, Plus, MessageCircle, X } from "lucide-react";
 import type { Chatbot } from "../types";
 
 interface CommandPaletteProps {
@@ -121,7 +121,7 @@ export default function CommandPalette({
                   <p className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
                     {category}
                   </p>
-                  {cmds.map((cmd, idx) => {
+                  {cmds.map((cmd) => {
                     const globalIndex = filteredCommands.indexOf(cmd);
                     const Icon = cmd.icon;
                     return (

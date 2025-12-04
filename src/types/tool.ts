@@ -71,8 +71,8 @@ export interface ToolCallLog {
   toolName: string;
   chatbotId: string;
   timestamp: string;
-  parameters: Record<string, any>;
-  response: any;
+  parameters: Record<string, unknown>;
+  response: unknown;
   success: boolean;
   error?: string;
   duration: number; // in milliseconds
