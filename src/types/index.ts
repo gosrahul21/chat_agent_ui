@@ -10,6 +10,7 @@ export interface Chatbot {
   allowedDomains?: string[];
   isEmbeddable?: boolean;
   embedKey?: string;
+  tools?: import('./tool').Tool[];
 }
 
 export interface Message {

@@ -8,6 +8,7 @@ import {
 import { useState } from "react";
 import DocumentUpload from "./DocumentUpload";
 import EmbedCodeDisplay from "./EmbedCodeDisplay";
+import ToolManagement from "./ToolManagement";
 import type { Chatbot } from "../types";
 import type { Document } from "../types/document";
 
@@ -32,7 +33,7 @@ export default function ChatbotSettingsModal({
   onUploadDocuments,
   onDeleteDocument,
 }: ChatbotSettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<"general" | "documents" | "embed">(
+  const [activeTab, setActiveTab] = useState<"general" | "documents" | "tools" | "embed">(
     "general"
   );
   const [formData, setFormData] = useState({
@@ -147,6 +148,16 @@ export default function ChatbotSettingsModal({
             Documents ({documents.length})
           </button>
           <button
+            onClick={() => setActiveTab("tools")}
+            className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+              activeTab === "tools"
+                ? "text-primary-600 border-b-2 border-primary-600"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Tools ({chatbot.tools?.length || 0})
+          </button>
+          <button
             onClick={() => setActiveTab("embed")}
             className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
               activeTab === "embed"
@@ -160,7 +171,17 @@ export default function ChatbotSettingsModal({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === "embed" ? (
+          {activeTab === "tools" ? (
+            <ToolManagement
+              tools={chatbot.tools || []}
+              onUpdateTools={(tools) => {
+                onUpdate({
+                  ...chatbot,
+                  tools: tools,
+                });
+              }}
+            />
+          ) : activeTab === "embed" ? (
             <EmbedCodeDisplay
               embedKey={chatbot.embedKey || ""}
               allowedDomains={chatbot.allowedDomains}
