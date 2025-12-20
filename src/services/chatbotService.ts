@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type { Chatbot, ChatHistory, ChatResponse } from '../types';
+import { accessToken } from './authService';
 
 // Chat Agent API (Node.js backend)
 const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8000';
@@ -13,7 +14,7 @@ const chatbotAPI = axios.create({
 
 // Add token to requests
 chatbotAPI.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
+  const token = accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -26,8 +27,6 @@ chatbotAPI.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       window.location.href = '/';
     }

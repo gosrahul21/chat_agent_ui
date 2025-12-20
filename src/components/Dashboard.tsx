@@ -100,9 +100,9 @@ function Dashboard() {
       if (bots.length > 0 && !selectedChatbotId) {
         setSelectedChatbotId(bots[0]._id);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       showToast("Failed to load chatbots", "error");
-      console.error("Failed to load chatbots:", error);
+      // console.error("Failed to load chatbots:", error);
     }
   };
 

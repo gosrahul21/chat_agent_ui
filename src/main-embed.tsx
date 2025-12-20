@@ -22,9 +22,7 @@ if (!sessionToken) {
   const root = document.getElementById('chatbot-root');
   if (root) {
     ReactDOM.createRoot(root).render(
-      <React.StrictMode>
         <EmbedChat sessionToken={sessionToken} />
-      </React.StrictMode>,
     )
   }
 }

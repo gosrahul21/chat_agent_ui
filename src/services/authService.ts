@@ -8,18 +8,21 @@ import type {
 } from '../types/auth';
 
 // Auth requests now go through chat_agent service (port 3000) which proxies to auth service (port 8000)
-const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:3000';
+const API_BASE_URL =  'http://localhost:3000';
 
 const authAPI = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Required to send/receive cookies
 });
+
+export let accessToken = '';
 
 // Add token to requests if available
 authAPI.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
+  const token = accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -36,26 +39,18 @@ authAPI.interceptors.response.use(
       originalRequest._retry = true;
       
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-          const response = await axios.get(`${API_BASE_URL}/auth/refreshSession`, {
-            headers: {
-              'refresh-token': `Bearer ${refreshToken}`,
-            },
-          });
-          
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', newRefreshToken);
-          
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return authAPI(originalRequest);
-        }
+        const response = await axios.get(`${API_BASE_URL}/auth/refreshSession`, {
+          withCredentials: true,
+        });
+        
+        const { accessToken: newAccessToken } = response.data;
+        accessToken = newAccessToken;
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return authAPI(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(refreshError);
       }
     }
@@ -88,22 +83,14 @@ export const authService = {
   },
 
   async refreshSession(): Promise<AuthResponse> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
     const response = await axios.get<AuthResponse>(`${API_BASE_URL}/auth/refreshSession`, {
-      headers: {
-        'refresh-token': `Bearer ${refreshToken}`,
-      },
+      withCredentials: true,
     });
     return response.data;
   },
 
   logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('accessToken');
     localStorage.removeItem('user');
   },
 
@@ -120,8 +107,9 @@ export const authService = {
   },
 
   storeAuthData(tokens: AuthResponse) {
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
+    // sessionStorage.setItem('accessToken', tokens.accessToken);
+    accessToken = tokens.accessToken;
+    
     if (tokens.user) {
       localStorage.setItem('user', JSON.stringify(tokens.user));
     }
