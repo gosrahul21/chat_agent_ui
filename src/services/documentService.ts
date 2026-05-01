@@ -1,6 +1,6 @@
 import type { Document } from '../types/document';
 
-const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8000';
+const CHATBOT_API_URL = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8000';
 
 const getAuthHeaders = (): Record<string, string> => {
   const token = localStorage.getItem('accessToken');

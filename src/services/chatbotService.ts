@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Chatbot, ChatHistory, ChatResponse } from '../types';
 
 // Chat Agent API (Node.js backend)
-const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8000';
+const CHATBOT_API_URL = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8000';
 
 const chatbotAPI = axios.create({
   baseURL: CHATBOT_API_URL,
@@ -158,7 +158,7 @@ export const chatbotService = {
     onDone: () => void,
     onError: (err: Error) => void
   ): () => void {
-    const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8000';
+    const CHATBOT_API_URL = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8000';
     const token = localStorage.getItem('accessToken');
 
     const controller = new AbortController();
