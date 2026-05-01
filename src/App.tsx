@@ -18,6 +18,8 @@ import { useAuth } from "./contexts/AuthContext";
 import { mockAPI } from "./data/mockData";
 import type { Chatbot, Message } from "./types";
 import type { Document } from "./types/document";
+import LandingPage from "./components/LandingPage";
+import "./LandingPage.css";
 
 function App() {
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
@@ -31,6 +33,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   // Confirmation dialog state
   const [confirmationDialog, setConfirmationDialog] = useState<{
@@ -241,7 +244,15 @@ function App() {
 
   // Show auth page if not authenticated
   if (!isAuthenticated) {
-    return <AuthPage />;
+    if (showAuth) {
+      return <AuthPage />;
+    }
+    return (
+      <LandingPage
+        onGetStarted={() => setShowAuth(true)}
+        onLogin={() => setShowAuth(true)}
+      />
+    );
   }
 
   return (
@@ -433,7 +444,7 @@ function App() {
           confirmText={confirmationDialog.confirmText}
         />
       )}
-    </div>
+  </div>
   );
 }
 
