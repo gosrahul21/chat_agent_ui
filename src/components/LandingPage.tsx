@@ -100,10 +100,10 @@ function AnimatedCounter({ target, suffix = "", prefix = "" }: { target: number;
 /* ─── Live chat mockup ─── */
 function ChatMockup() {
   const messages = [
-    { from: "user", text: "How do I reset my password?" },
-    { from: "bot", text: "Sure! Go to Settings → Security → Reset Password. You'll get an email within 30 seconds." },
-    { from: "user", text: "What payment methods do you accept?" },
-    { from: "bot", text: "We accept Visa, Mastercard, PayPal and UPI. All transactions are secured by Stripe." },
+    { from: "user", text: "What's our policy on remote work according to the employee handbook?" },
+    { from: "bot", text: "According to the handbook (Section 3.2), employees can work remotely up to 3 days a week with manager approval." },
+    { from: "user", text: "How do I configure the API rate limits?" },
+    { from: "bot", text: "The API rate limits are configured in the `config/rate_limit.yaml` file. The default is 100 requests per minute." },
   ];
   const [visible, setVisible] = useState(0);
   useEffect(() => {
@@ -117,13 +117,13 @@ function ChatMockup() {
         <div className="chat-mockup-dot" style={{ background: "#ef4444" }} />
         <div className="chat-mockup-dot" style={{ background: "#f59e0b" }} />
         <div className="chat-mockup-dot" style={{ background: "#22c55e" }} />
-        <span className="chat-mockup-title">ChatAgent · Support Bot</span>
-        <span className="chat-mockup-status"><span className="status-dot" />Online</span>
+        <span className="chat-mockup-title">QueryBase · Knowledge Assistant</span>
+        <span className="chat-mockup-status"><span className="status-dot" />Indexing Complete</span>
       </div>
       <div className="chat-mockup-body">
         <div className="chat-mockup-intro">
           <div className="bot-avatar-sm"><Bot className="w-4 h-4" /></div>
-          <div className="chat-bubble-bot">Hi! I'm your AI support agent. How can I help?</div>
+          <div className="chat-bubble-bot">Hi! I've indexed your documents. What would you like to know?</div>
         </div>
         {messages.slice(0, visible).map((m, i) => (
           <div key={i} className={`chat-msg chat-msg--${m.from}`}>
@@ -205,7 +205,7 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
         <div className="lp-nav-inner">
           <div className="lp-logo">
             <div className="lp-logo-mark"><Bot className="w-4 h-4 text-white" /></div>
-            <span className="lp-logo-text">ChatAgent</span>
+            <span className="lp-logo-text">QueryBase</span>
           </div>
           <ul className="lp-links">
             {["Features", "How it Works", "Pricing"].map(l => (
@@ -247,12 +247,12 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
               <span>Powered by GPT-4o &amp; Claude 3.5</span>
             </div>
             <h1 className="lp-hero-title">
-              AI support that<br />
-              <TypingText phrases={["never sleeps.", "scales instantly.", "knows your docs.", "delights customers."]} />
+              Chat with your<br />
+              <TypingText phrases={["knowledge base.", "internal wikis.", "technical docs.", "research papers."]} />
             </h1>
             <p className="lp-hero-sub">
-              Build document-aware chatbots in minutes — no code, no complexity.
-              Just upload, configure, and go live.
+              Turn your scattered documents into an intelligent, interactive knowledge base. 
+              Just upload your files and start querying instantly.
             </p>
             <div className="lp-hero-actions">
               <button onClick={onGetStarted} className="lp-btn-primary">
@@ -266,7 +266,7 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
               <div className="lp-avatars">
                 {["S","R","A","M","J"].map((l, i) => <div key={i} className={`lp-av lp-av--${i+1}`} style={{ marginLeft: i ? -10 : 0 }}>{l}</div>)}
               </div>
-              <p><strong>2,000+</strong> teams trust ChatAgent</p>
+              <p><strong>2,000+</strong> teams trust QueryBase</p>
             </div>
           </div>
           <div className="lp-hero-right">
@@ -292,7 +292,7 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
         <div className="lp-stats-inner">
           {[
             { val: 2000, suf: "+", label: "Companies" },
-            { val: 50, suf: "M+", label: "Messages/month" },
+            { val: 50, suf: "M+", label: "Queries/month" },
             { val: 99, suf: ".9%", label: "Uptime" },
             { val: 4, pre: "", suf: ".9 / 5 ★", label: "Avg rating" },
           ].map(({ val, suf, label, pre }) => (
@@ -324,7 +324,7 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
             <BentoCard className="bento-tall">
               <div className="bento-icon-wrap bento-violet"><Zap className="w-6 h-6 text-white" /></div>
               <h3 className="bento-title">Lightning Responses</h3>
-              <p className="bento-desc">Sub-200ms responses. Stream tokens as they generate for a native feel.</p>
+              <p className="bento-desc">Sub-200ms responses for even the most complex queries across thousands of documents.</p>
               <div className="bento-latency">
                 <div className="bento-bar-wrap">
                   {[80, 120, 95, 170, 110, 90, 140].map((h, i) => (
@@ -338,25 +338,25 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
             <BentoCard>
               <div className="bento-icon-wrap bento-emerald"><Shield className="w-6 h-6 text-white" /></div>
               <h3 className="bento-title">Enterprise Security</h3>
-              <p className="bento-desc">End-to-end encryption, RBAC, and SOC 2 Type II certified.</p>
+              <p className="bento-desc">Bank-grade security for internal docs. End-to-end encryption, RBAC, and SOC 2 Type II certified.</p>
             </BentoCard>
 
             <BentoCard>
               <div className="bento-icon-wrap bento-orange"><BarChart3 className="w-6 h-6 text-white" /></div>
-              <h3 className="bento-title">Rich Analytics</h3>
-              <p className="bento-desc">CSAT scores, deflection rates, and funnel insights in one dashboard.</p>
+              <h3 className="bento-title">Query Analytics</h3>
+              <p className="bento-desc">Understand what your team is searching for and identify knowledge gaps in your organization.</p>
             </BentoCard>
 
             <BentoCard>
               <div className="bento-icon-wrap bento-pink"><Globe className="w-6 h-6 text-white" /></div>
               <h3 className="bento-title">50+ Languages</h3>
-              <p className="bento-desc">Auto-detects and responds in your customer's language — zero config.</p>
+              <p className="bento-desc">Auto-translates your knowledge base, allowing global teams to query documents in their native language.</p>
             </BentoCard>
 
             <BentoCard className="bento-wide">
               <div className="bento-icon-wrap bento-cyan"><Clock className="w-6 h-6 text-white" /></div>
-              <h3 className="bento-title">24 / 7 Availability</h3>
-              <p className="bento-desc">Your AI never takes a sick day. It handles thousands of simultaneous conversations with consistent quality, around the clock.</p>
+              <h3 className="bento-title">Uninterrupted Access</h3>
+              <p className="bento-desc">Your knowledge base is always available. Never lose time searching for critical information across silos again.</p>
               <div className="bento-uptime-row">
                 {Array.from({ length: 30 }).map((_, i) => (
                   <div key={i} className="uptime-block" style={{ opacity: Math.random() > 0.05 ? 1 : 0.2 }} />
@@ -367,8 +367,8 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
 
             <BentoCard>
               <div className="bento-icon-wrap bento-rose"><MessageSquare className="w-6 h-6 text-white" /></div>
-              <h3 className="bento-title">Human Handoff</h3>
-              <p className="bento-desc">Seamlessly escalate to a human agent when the AI isn't confident enough.</p>
+              <h3 className="bento-title">Source Citations</h3>
+              <p className="bento-desc">Every answer comes with precise citations and links back to the original source document.</p>
             </BentoCard>
           </div>
         </div>
@@ -385,7 +385,7 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
             {[
               { n: "01", icon: Bot, title: "Create your bot", desc: "Name it, set a personality and system prompt that matches your brand." },
               { n: "02", icon: Upload, title: "Upload knowledge", desc: "Drag in PDFs, docs, or paste URLs. Our AI indexes everything automatically." },
-              { n: "03", icon: Zap, title: "Deploy & iterate", desc: "Go live instantly. Refine based on analytics and customer feedback." },
+              { n: "03", icon: Zap, title: "Query & share", desc: "Start asking questions instantly. Share with your team and uncover insights faster." },
             ].map(({ n, icon: Icon, title, desc }, i) => (
               <div key={n} className="step-v2">
                 <div className="step-v2-num">{n}</div>
@@ -409,9 +409,9 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
             <h2 className="lp-section-title">Trusted by <span className="lp-grad">builders</span></h2>
           </div>
           <div className="testimonials-v2">
-            <Testimonial quote="ChatAgent cut our ticket volume by 60% in month one. Onboarding took 20 minutes." name="Sarah Chen" role="Head of Support, Acme Inc." color="linear-gradient(135deg,#f43f5e,#fb923c)" initials="SC" />
-            <Testimonial quote="Trained on 200+ docs. Our bot answers better than some human agents. Incredible tech." name="Marcus Williams" role="CTO, Shopframe" color="linear-gradient(135deg,#3b82f6,#6366f1)" initials="MW" />
-            <Testimonial quote="The analytics dashboard is gold. Finally we know what customers actually ask about." name="Priya Sharma" role="Product, Paylance" color="linear-gradient(135deg,#10b981,#0ea5e9)" initials="PS" />
+            <Testimonial quote="QueryBase reduced our onboarding time by 60%. New hires can just ask the knowledge base instead of tapping shoulders." name="Sarah Chen" role="Engineering Manager, Acme Inc." color="linear-gradient(135deg,#f43f5e,#fb923c)" initials="SC" />
+            <Testimonial quote="We threw 1,000+ pages of technical documentation at it. The accuracy of the answers and citations is mind-blowing." name="Marcus Williams" role="CTO, Shopframe" color="linear-gradient(135deg,#3b82f6,#6366f1)" initials="MW" />
+            <Testimonial quote="The query analytics dashboard is gold. Finally we know what information our team is struggling to find." name="Priya Sharma" role="Product, Paylance" color="linear-gradient(135deg,#10b981,#0ea5e9)" initials="PS" />
           </div>
         </div>
       </section>
@@ -443,7 +443,7 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
         <div className="lp-cta-glow-1" /><div className="lp-cta-glow-2" />
         <div className="lp-cta-inner">
           <div className="lp-cta-icon"><Users className="w-8 h-8 text-white" /></div>
-          <h2 className="lp-cta-title">Ready to transform support?</h2>
+          <h2 className="lp-cta-title">Ready to unlock your knowledge?</h2>
           <p className="lp-cta-sub">Join 2,000+ teams. No credit card required.</p>
           <button onClick={onGetStarted} className="lp-btn-primary lp-btn-primary--lg">
             <Play className="w-4 h-4" fill="white" /> Start building for free
@@ -455,8 +455,8 @@ export default function LandingPage({ onGetStarted, onLogin }: LandingPageProps)
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
-            <div className="lp-logo"><div className="lp-logo-mark"><Bot className="w-4 h-4 text-white" /></div><span className="lp-logo-text">ChatAgent</span></div>
-            <p className="lp-footer-tag">AI support, simplified.</p>
+            <div className="lp-logo"><div className="lp-logo-mark"><Bot className="w-4 h-4 text-white" /></div><span className="lp-logo-text">QueryBase</span></div>
+            <p className="lp-footer-tag">Your intelligent knowledge base.</p>
           </div>
           {[
             { title: "Product", links: ["Features","Pricing","Changelog","Roadmap"] },
