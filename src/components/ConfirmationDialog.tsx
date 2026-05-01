@@ -4,7 +4,6 @@ import {
   Trash2,
   Info,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import { useEffect } from "react";
 

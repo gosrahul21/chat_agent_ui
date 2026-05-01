@@ -51,7 +51,7 @@ export default function ChatInterface({
       id: `temp-${Date.now()}`,
       role: 'user',
       content: trimmed,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     };
     setDisplayMessages((prev) => [...prev, userMsg]);
     setStreamingContent('');
@@ -73,7 +73,7 @@ export default function ChatInterface({
               id: `ai-${Date.now()}`,
               role: 'assistant',
               content: finalContent,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             } as Message,
           ]);
           return '';
