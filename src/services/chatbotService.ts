@@ -146,5 +146,65 @@ export const chatbotService = {
       throw new Error(response.data.message || 'Failed to clear chat history');
     }
   },
+
+  /**
+   * Stream a chat message using Server-Sent Events.
+   * Calls onToken for each streamed token, onDone when finished.
+   */
+  streamMessage(
+    chatbotId: string,
+    message: string,
+    onToken: (token: string) => void,
+    onDone: () => void,
+    onError: (err: Error) => void
+  ): () => void {
+    const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8000';
+    const token = localStorage.getItem('accessToken');
+
+    const controller = new AbortController();
+
+    fetch(`${CHATBOT_API_URL}/api/chatbots/${chatbotId}/chat/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ message }),
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.token) onToken(data.token);
+                if (data.done) onDone();
+              } catch {
+                // ignore malformed lines
+              }
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') onError(err);
+      });
+
+    // Return a cleanup fn to abort the stream
+    return () => controller.abort();
+  },
 };
 

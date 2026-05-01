@@ -1,149 +1,98 @@
-import axios from 'axios';
 import type { Document } from '../types/document';
 
-// RAG Model API (Python backend)
-const RAG_API_URL = import.meta.env.VITE_RAG_API_URL || 'http://localhost:5000';
+const CHATBOT_API_URL = import.meta.env.VITE_CHATBOT_API_URL || 'http://localhost:8000';
 
-const ragAPI = axios.create({
-  baseURL: RAG_API_URL,
-  headers: {
+const getAuthHeaders = (): Record<string, string> => {
+  const token = localStorage.getItem('accessToken');
+  return {
     'Content-Type': 'application/json',
-  },
-});
-
-interface DocumentUploadResponse {
-  message: string;
-  document: {
-    id: string;
-    chatbot_id: string;
-    filename: string;
-    unique_filename: string;
-    file_path: string;
-    file_size: number;
-    file_type: string;
-    uploaded_at: string;
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
-}
-
-interface DocumentListResponse {
-  chatbot_id: string;
-  documents: Array<{
-    id: string;
-    chatbot_id: string;
-    filename: string;
-    file_size: number;
-    file_type: string;
-    uploaded_at: string;
-  }>;
-  total: number;
-}
-
-interface TrainingResponse {
-  message: string;
-  chatbot_id: string;
-  documents_processed: number;
-  total_chunks: number;
-  collection_name: string;
-  trained_at: string;
-}
-
-interface TrainingStatusResponse {
-  chatbot_id: string;
-  is_trained: boolean;
-  documents_count?: number;
-  chunks_count?: number;
-  last_trained?: string;
-  collection_name?: string;
-}
+};
 
 export const documentService = {
   /**
    * Get all documents for a chatbot
    */
   async getDocuments(chatbotId: string): Promise<Document[]> {
-    try {
-      const response = await ragAPI.get<DocumentListResponse>(
-        `/api/chatbots/${chatbotId}/documents`
-      );
-      
-      // Convert Python backend format to frontend format
-      return response.data.documents.map(doc => ({
-        id: doc.id,
-        chatbotId: doc.chatbot_id,
-        filename: doc.filename,
-        fileSize: doc.file_size,
-        fileType: doc.file_type,
-        uploadedAt: doc.uploaded_at,
-      }));
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        return [];
-      }
-      throw error;
-    }
+    const res = await fetch(`${CHATBOT_API_URL}/api/chatbots/${chatbotId}/documents`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) return [];
+    const body = await res.json();
+    const docs = body.data || [];
+    return docs.map((doc: any) => ({
+      id: doc._id || doc.filename,
+      chatbotId,
+      filename: doc.originalname || doc.filename,
+      fileSize: doc.size || 0,
+      fileType: doc.mimetype || '',
+      uploadedAt: doc.uploadedAt || new Date().toISOString(),
+    }));
   },
 
   /**
-   * Upload a document for a chatbot
+   * Upload a single document for a chatbot
    */
   async uploadDocument(chatbotId: string, file: File): Promise<Document> {
+    const token = localStorage.getItem('accessToken');
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('document', file);
 
-    const response = await ragAPI.post<DocumentUploadResponse>(
-      `/api/chatbots/${chatbotId}/documents`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
+    const res = await fetch(`${CHATBOT_API_URL}/api/chatbots/${chatbotId}/documents`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
 
-    const doc = response.data.document;
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message || 'Upload failed');
+
+    const doc = body.data;
     return {
-      id: doc.id,
-      chatbotId: doc.chatbot_id,
-      filename: doc.filename,
-      fileSize: doc.file_size,
-      fileType: doc.file_type,
-      uploadedAt: doc.uploaded_at,
+      id: doc.id || doc.filename || Math.random().toString(36).substring(7),
+      chatbotId,
+      filename: doc.filename || file.name,
+      fileSize: doc.fileSize || file.size,
+      fileType: doc.fileType || file.type,
+      uploadedAt: doc.uploadedAt || new Date().toISOString(),
     };
   },
 
   /**
-   * Upload multiple documents
+   * Upload multiple documents sequentially
    */
   async uploadDocuments(chatbotId: string, files: File[]): Promise<Document[]> {
-    const uploadPromises = files.map(file => this.uploadDocument(chatbotId, file));
-    return Promise.all(uploadPromises);
+    const results: Document[] = [];
+    for (const file of files) {
+      const doc = await this.uploadDocument(chatbotId, file);
+      results.push(doc);
+    }
+    return results;
   },
 
   /**
-   * Delete a document
+   * Delete a document (removes from metadata only; Pinecone vectors remain)
    */
   async deleteDocument(chatbotId: string, documentId: string): Promise<void> {
-    await ragAPI.delete(`/api/chatbots/${chatbotId}/documents/${documentId}`);
+    const res = await fetch(
+      `${CHATBOT_API_URL}/api/chatbots/${chatbotId}/documents/${documentId}`,
+      { method: 'DELETE', headers: getAuthHeaders() }
+    );
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.message || 'Delete failed');
+    }
   },
 
   /**
-   * Train a chatbot with uploaded documents
+   * Stubs kept for API compatibility — no separate train step needed
    */
-  async trainChatbot(chatbotId: string): Promise<TrainingResponse> {
-    const response = await ragAPI.post<TrainingResponse>(
-      `/api/chatbots/${chatbotId}/train`
-    );
-    return response.data;
+  async trainChatbot(_chatbotId: string): Promise<void> {
+    // Training happens automatically on upload via the RAG pipeline
   },
 
-  /**
-   * Get training status for a chatbot
-   */
-  async getTrainingStatus(chatbotId: string): Promise<TrainingStatusResponse> {
-    const response = await ragAPI.get<TrainingStatusResponse>(
-      `/api/chatbots/${chatbotId}/training-status`
-    );
-    return response.data;
+  async getTrainingStatus(_chatbotId: string): Promise<{ is_trained: boolean }> {
+    return { is_trained: true };
   },
 };
-
